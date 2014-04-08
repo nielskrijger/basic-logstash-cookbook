@@ -1,3 +1,9 @@
+include_recipe "ark"
+
+#
+# Create user and group
+#
+
 group node['logstash']['group'] do
   system true
   gid node['logstash']['gid']
@@ -12,6 +18,10 @@ user node['logstash']['user'] do
   uid node['logstash']['uid']
 end
 
+#
+# Create directories
+#
+
 directory node['logstash']['dir'] do
   action :create
   owner 'root'
@@ -19,6 +29,9 @@ directory node['logstash']['dir'] do
   mode '0755'
 end
 
+#
+# Install logstash
+#
 # To install Logstash, do the following:
 # 1. Download logstash from remote location
 # 2. Unzip remote file in Chef cache directory
@@ -55,12 +68,12 @@ ark "logstash" do
   prefix_root node['logstash']['dir']
   prefix_home node['logstash']['dir']
 
-  notifies :start, 'service[basic-logstash]' unless node.elasticsearch[:skip_start]
-  #notifies :restart, 'service[elasticsearch]' unless node.elasticsearch[:skip_restart]
+  notifies :start, 'service[basic-logstash]'
+  notifies :restart, 'service[basic-logstash]'
 
   not_if do
     link = "#{node['logstash']['dir']}/logstash"
-    target = "#{node['logstash']['dir']}/logstash-v#{node.elasticsearch[:version]}"
+    target = "#{node['logstash']['dir']}/logstash-v#{node['logstash']['version']}"
     binary = "#{target}/bin/logstash"
 
     ::File.directory?(link) && ::File.symlink?(link) && ::File.readlink(link) == target && ::File.exists?(binary)
@@ -74,5 +87,6 @@ end
 
 service "logstash_indexer" do
   provider Chef::Provider::Service::Upstart
-  action [:enable, :start, :stop]
+  supports :status => true, :restart => true
+  action [:enable]
 end
