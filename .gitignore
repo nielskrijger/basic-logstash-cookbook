@@ -1,2 +1,5 @@
 .idea
 *.iml
+.kitchen/
+.kitchen.local.yml
+Berksfile.lock

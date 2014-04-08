@@ -1,4 +1,4 @@
 site :opscode
 
-cookbook 'ark'
-cookbook 'basic-java', git: 'git@github.com:nielskrijger/basic-java-cookbook.git'
+metadata
+cookbook 'basic-java', github: 'nielskrijger/basic-java-cookbook'

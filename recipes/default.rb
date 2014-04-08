@@ -1,4 +1,5 @@
 include_recipe "ark"
+include_recipe "basic-java"
 
 #
 # Create user and group
@@ -22,7 +23,7 @@ end
 # Create directories
 #
 
-directory node['logstash']['dir'] do
+directory node['logstash']['install_dir'] do
   action :create
   owner 'root'
   group 'root'
@@ -32,61 +33,37 @@ end
 #
 # Install logstash
 #
-# To install Logstash, do the following:
-# 1. Download logstash from remote location
-# 2. Unzip remote file in Chef cache directory
-# 3. Move extracted contents to target directory
-#
-=begin
-src_filename = "logstash-v#{node['logstash']['version']}.zip"
-src_filepath = "#{Chef::Config['file_cache_path']}/#{src_filename}"
-extract_path = "#{Chef::Config['file_cache_path']}/logstash-v#{node['logstash']['version']}"
-
-remote_file src_filepath do
-  source node['logstash']['url']
-  owner 'root'
-  group 'root'
-  mode '0644'
-end
-
-bash 'install_logstash' do
-  cwd ::File.dirname(src_filepath)
-  code <<-EOH
-    mkdir -p #{extract_path}
-    unzip #{src_filename} -d #{extract_path}
-    mv #{extract_path}/*/* #{node['logstash']['dir']}/
-  EOH
-  not_if { ::File.exists?(extract_path) } # Do not run when file has already been extracted
-end
-=end
 
 ark "logstash" do
   url node['logstash']['url']
   owner node['logstash']['user']
   group node['logstash']['group']
   version node['logstash']['version']
-  prefix_root node['logstash']['dir']
-  prefix_home node['logstash']['dir']
+  prefix_root node['logstash']['install_dir']
+  prefix_home node['logstash']['install_dir']
 
-  notifies :start, 'service[basic-logstash]'
-  notifies :restart, 'service[basic-logstash]'
+  notifies :start, 'service[logstash]'
+  notifies :restart, 'service[logstash]'
 
   not_if do
-    link = "#{node['logstash']['dir']}/logstash"
-    target = "#{node['logstash']['dir']}/logstash-v#{node['logstash']['version']}"
+    link = "#{node['logstash']['dir']}"
+    target = "#{node['logstash']['install_dir']}/logstash-v#{node['logstash']['version']}"
     binary = "#{target}/bin/logstash"
 
-    ::File.directory?(link) && ::File.symlink?(link) && ::File.readlink(link) == target && ::File.exists?(binary)
+    ::File.directory?(target) && ::File.symlink?(link) && ::File.readlink(link) == target && ::File.exists?(binary)
   end
 end
 
-template "/etc/init/logstash_indexer.conf" do
+#
+# Create Logstash configuration
+#
+
+template "/etc/init/logstash.conf" do
   mode '0644'
-  source "init.logstash_indexer.conf.erb"
+  source "init.logstash.conf.erb"
 end
 
-service "logstash_indexer" do
+service "logstash" do
   provider Chef::Provider::Service::Upstart
-  supports :status => true, :restart => true
   action [:enable]
 end
