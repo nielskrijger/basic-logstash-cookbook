@@ -1,1 +1,4 @@
-cookbook 'basic-logstash', git: 'git@github.com:company-cookbook/application.git'
+site :opscode
+
+cookbook 'ark'
+cookbook 'basic-java', git: 'git@github.com:nielskrijger/basic-java-cookbook.git'
