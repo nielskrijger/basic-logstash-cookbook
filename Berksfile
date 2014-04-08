@@ -1,0 +1,1 @@
+cookbook 'basic-logstash', git: 'git@github.com:company-cookbook/application.git'
