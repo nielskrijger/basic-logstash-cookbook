@@ -20,7 +20,7 @@ user node['logstash']['user'] do
 end
 
 #
-# Create directories
+# Create directories and files
 #
 
 directory node['logstash']['install_dir'] do
@@ -28,6 +28,29 @@ directory node['logstash']['install_dir'] do
   owner 'root'
   group 'root'
   mode '0755'
+end
+
+directory node['logstash']['conf_dir'] do
+  action :create
+  recursive true
+  owner node['logstash']['user']
+  group node['logstash']['group']
+  mode '0755'
+end
+
+directory File.dirname(node['logstash']['log_file']) do
+  action :create
+  recursive true
+  owner node['logstash']['user']
+  group node['logstash']['group']
+  mode '0755'
+end
+
+file node['logstash']['log_file'] do
+  owner node['logstash']['user']
+  group node['logstash']['group']
+  mode '0644'
+  action :create_if_missing
 end
 
 #
@@ -41,9 +64,6 @@ ark "logstash" do
   version node['logstash']['version']
   prefix_root node['logstash']['install_dir']
   prefix_home node['logstash']['install_dir']
-
-  notifies :start, 'service[logstash]'
-  notifies :restart, 'service[logstash]'
 
   not_if do
     link = "#{node['logstash']['dir']}"
@@ -65,5 +85,5 @@ end
 
 service "logstash" do
   provider Chef::Provider::Service::Upstart
-  action [:enable]
+  action [:enable, :start]
 end
