@@ -23,26 +23,22 @@ end
 # Create directories and files
 #
 
+directories = [node['logstash']['conf_dir'],
+               File.dirname(node['logstash']['log_file'])]
+directories.each do |dir|
+  directory dir do
+    action :create
+    recursive true
+    owner node['logstash']['user']
+    group node['logstash']['group']
+    mode '0755'
+  end
+end
+
 directory node['logstash']['install_dir'] do
   action :create
   owner 'root'
   group 'root'
-  mode '0755'
-end
-
-directory node['logstash']['conf_dir'] do
-  action :create
-  recursive true
-  owner node['logstash']['user']
-  group node['logstash']['group']
-  mode '0755'
-end
-
-directory File.dirname(node['logstash']['log_file']) do
-  action :create
-  recursive true
-  owner node['logstash']['user']
-  group node['logstash']['group']
   mode '0755'
 end
 
