@@ -1,5 +1,5 @@
 include_recipe "ark"
-include_recipe "basic-java"
+include_recipe "java"
 
 #
 # Create user and group

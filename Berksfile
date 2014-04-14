@@ -1,4 +1,4 @@
 site :opscode
 
 metadata
-cookbook 'basic-java', github: 'nielskrijger/basic-java-cookbook'
+cookbook 'java', github: 'nielskrijger/java-cookbook'
